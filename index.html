@@ -8,11 +8,13 @@
 <body style="margin:0;overflow:hidden;background:transparent;">
 <canvas id="canvas" width="500" height="500"></canvas>
 <script>
-new rive.Rive({
+const r = new rive.Rive({
   src: "cta_hover.riv",
   canvas: document.getElementById("canvas"),
-  autoplay: true
+  autoplay: true,
+  stateMachines: "State Machine 1"
 });
+
 </script>
 </body>
 </html>
