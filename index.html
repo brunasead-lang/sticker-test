@@ -8,9 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
 
 <style>
-*{
-    box-sizing:border-box;
-}
+*{box-sizing:border-box;}
 
 body{
     margin:0;
@@ -137,16 +135,33 @@ input[type=range]{
         <div class="group">
             <label>Artboard width</label>
 
-            <input
-                id="widthSlider"
-                type="range"
-                min="113"
-                max="600"
-                value="213">
+            <input id="widthSlider" type="range" min="113" max="600" value="213">
 
             <div class="value">
                 Width:
                 <span id="widthValue">213</span>px
+            </div>
+        </div>
+
+        <div class="group">
+            <label>Animation velocity</label>
+
+            <input id="velocitySlider" type="range" min="0.5" max="2" step="0.1" value="1">
+
+            <div class="value">
+                Speed:
+                <span id="velocityValue">1.0</span>x
+            </div>
+        </div>
+
+        <div class="group">
+            <label>Click intensity</label>
+
+            <input id="intensitySlider" type="range" min="100" max="150" step="1" value="100">
+
+            <div class="value">
+                Intensity:
+                <span id="intensityValue">100</span>%
             </div>
         </div>
 
@@ -156,26 +171,31 @@ input[type=range]{
 
 <script>
 const canvas=document.getElementById("canvas");
-const slider=document.getElementById("widthSlider");
+
+const widthSlider=document.getElementById("widthSlider");
 const widthValue=document.getElementById("widthValue");
+
+const velocitySlider=document.getElementById("velocitySlider");
+const velocityValue=document.getElementById("velocityValue");
+
+const intensitySlider=document.getElementById("intensitySlider");
+const intensityValue=document.getElementById("intensityValue");
+
 const colorPreview=document.getElementById("colorPreview");
 const hexInput=document.getElementById("hexInput");
 
-let shapeColorProperty;
+let shapeColorProperty=null;
+let intensityInput=null;
 
 const picker=new iro.ColorPicker("#colorPicker",{
     width:260,
     color:"#FFB429",
     borderWidth:0,
     layout:[
-        {
-            component:iro.ui.Box
-        },
+        {component:iro.ui.Box},
         {
             component:iro.ui.Slider,
-            options:{
-                sliderType:"hue"
-            }
+            options:{sliderType:"hue"}
         }
     ]
 });
@@ -198,8 +218,13 @@ const riveFile=new rive.Rive({
         const vm=riveFile.viewModelInstance;
         shapeColorProperty=vm.color("shapeColor");
 
+        const inputs=riveFile.stateMachineInputs("State Machine 1");
+        intensityInput=inputs.find(input=>input.name==="intensity");
+
         updateColor("#FFB429");
         updateWidth();
+        updateVelocity();
+        updateIntensity();
     }
 });
 
@@ -238,7 +263,7 @@ function updateColor(hex){
 }
 
 function updateWidth(){
-    const width=parseInt(slider.value);
+    const width=parseInt(widthSlider.value);
 
     canvas.style.width=width+"px";
     canvas.style.height="65px";
@@ -248,6 +273,24 @@ function updateWidth(){
     requestAnimationFrame(()=>{
         riveFile.resizeDrawingSurfaceToCanvas();
     });
+}
+
+function updateVelocity(){
+    const speed=parseFloat(velocitySlider.value);
+
+    velocityValue.textContent=speed.toFixed(1);
+
+    riveFile.speed=speed;
+}
+
+function updateIntensity(){
+    const intensity=parseInt(intensitySlider.value);
+
+    intensityValue.textContent=intensity;
+
+    if(intensityInput){
+        intensityInput.value=intensity/100;
+    }
 }
 
 picker.on("color:change",(color)=>{
@@ -263,7 +306,9 @@ hexInput.addEventListener("input",()=>{
     }
 });
 
-slider.addEventListener("input",updateWidth);
+widthSlider.addEventListener("input",updateWidth);
+velocitySlider.addEventListener("input",updateVelocity);
+intensitySlider.addEventListener("input",updateIntensity);
 </script>
 
 </body>
