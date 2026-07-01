@@ -3,24 +3,95 @@
 <head>
   <meta charset="UTF-8" />
   <script src="https://unpkg.com/@rive-app/canvas@latest"></script>
+
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #111111;
+      color: #f1f1f1;
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      width: 80%;
+      max-width: 900px;
+      background: #282828;
+      border-radius: 20px;
+      padding: 32px;
+    }
+
+    .rive-box {
+      height: 180px;
+      background: #1b1b1b;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 640px;
+      height: 65px;
+      display: block;
+    }
+
+    .controls {
+      margin-top: 28px;
+      display: flex;
+      justify-content: space-between;
+      gap: 32px;
+      align-items: flex-end;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 12px;
+      color: #cfcfcf;
+      font-size: 14px;
+    }
+
+    input[type="color"] {
+      width: 72px;
+      height: 44px;
+      padding: 0;
+      border: 0;
+      background: none;
+      cursor: pointer;
+    }
+
+    input[type="range"] {
+      width: 260px;
+    }
+
+    .width-text {
+      margin-top: 12px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+  </style>
 </head>
 
-<body style="margin:0;min-height:100vh;background:#111;display:flex;align-items:center;justify-content:center;">
-  <div style="background:#282828;border-radius:20px;padding:32px;width:80%;max-width:900px;">
-    <div style="background:#1b1b1b;border-radius:20px;height:180px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
-      <canvas id="canvas" width="640" height="65" style="width:640px;height:65px;"></canvas>
+<body>
+  <div class="card">
+    <div class="rive-box">
+      <canvas id="canvas"></canvas>
     </div>
 
-    <div style="display:flex;justify-content:space-between;gap:24px;margin-top:28px;color:white;font-family:Arial;">
+    <div class="controls">
       <div>
-        <p>Shape color</p>
-        <input id="colorPicker" type="color" value="#ffb429" />
+        <label>Shape color</label>
+        <input id="colorPicker" type="color" value="#FFB429" />
       </div>
 
       <div>
-        <p>Artboard width</p>
+        <label>Artboard width</label>
         <input id="widthSlider" type="range" min="213" max="820" value="640" />
-        <p>Width: <span id="widthValue">640</span>px</p>
+        <div class="width-text">Width: <span id="widthValue">640</span>px</div>
       </div>
     </div>
   </div>
@@ -32,6 +103,7 @@
     const widthValue = document.getElementById("widthValue");
 
     let shapeColorProperty = null;
+    let colorStringProperty = null;
 
     const r = new rive.Rive({
       src: "cta_click.riv",
@@ -39,32 +111,47 @@
       autoplay: true,
       autoBind: true,
       stateMachines: "State Machine 1",
+
       layout: new rive.Layout({
-        fit: rive.Fit.Fill,
+        fit: rive.Fit.Layout,
         alignment: rive.Alignment.Center
       }),
+
       onLoad: () => {
         r.resizeDrawingSurfaceToCanvas();
 
-        const vm = r.viewModelByName("ShapeClass");
-        const vmi = vm.instanceByName("isPink");
+        const instance = r.viewModelInstance;
 
-        r.bindViewModelInstance(vmi);
-
-        shapeColorProperty = vmi.color("shapeColor");
+        shapeColorProperty = instance.color("shapeColor");
+        colorStringProperty = instance.string("color");
 
         updateColor(colorPicker.value);
+        updateSize();
       }
     });
 
-    function hexToRiveColor(hex) {
+    function colorAARRGGBB(hex) {
+      const clean = hex.replace("#", "");
+      return Number("0xFF" + clean);
+    }
+
+    function colorRRGGBBAA(hex) {
       const clean = hex.replace("#", "");
       return Number("0x" + clean + "FF");
     }
 
     function updateColor(hex) {
-      if (!shapeColorProperty) return;
-      shapeColorProperty.value = hexToRiveColor(hex);
+      if (colorStringProperty) {
+        colorStringProperty.value = hex;
+      }
+
+      if (shapeColorProperty) {
+        shapeColorProperty.value = colorAARRGGBB(hex);
+
+        setTimeout(() => {
+          shapeColorProperty.value = colorRRGGBBAA(hex);
+        }, 30);
+      }
     }
 
     function updateSize() {
@@ -72,13 +159,11 @@
 
       canvas.style.width = width + "px";
       canvas.style.height = "65px";
-
-      canvas.width = width;
-      canvas.height = 65;
-
       widthValue.textContent = width;
 
-      r.resizeDrawingSurfaceToCanvas();
+      requestAnimationFrame(() => {
+        r.resizeDrawingSurfaceToCanvas();
+      });
     }
 
     colorPicker.addEventListener("input", () => {
