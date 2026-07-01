@@ -9,11 +9,11 @@
       margin: 0;
       min-height: 100vh;
       background: #111111;
-      color: #f1f1f1;
-      font-family: Arial, sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-family: Arial, sans-serif;
+      color: white;
     }
 
     .card {
@@ -103,7 +103,6 @@
     const widthValue = document.getElementById("widthValue");
 
     let shapeColorProperty = null;
-    let colorStringProperty = null;
 
     const r = new rive.Rive({
       src: "cta_click.riv",
@@ -121,36 +120,26 @@
         r.resizeDrawingSurfaceToCanvas();
 
         const instance = r.viewModelInstance;
-
         shapeColorProperty = instance.color("shapeColor");
-        colorStringProperty = instance.string("color");
 
         updateColor(colorPicker.value);
         updateSize();
       }
     });
 
-    function colorAARRGGBB(hex) {
+    function hexToRiveColor(hex) {
       const clean = hex.replace("#", "");
-      return Number("0xFF" + clean);
-    }
 
-    function colorRRGGBBAA(hex) {
-      const clean = hex.replace("#", "");
-      return Number("0x" + clean + "FF");
+      const red = clean.substring(0, 2);
+      const green = clean.substring(2, 4);
+      const blue = clean.substring(4, 6);
+
+      return Number("0xFF" + blue + green + red);
     }
 
     function updateColor(hex) {
-      if (colorStringProperty) {
-        colorStringProperty.value = hex;
-      }
-
       if (shapeColorProperty) {
-        shapeColorProperty.value = colorAARRGGBB(hex);
-
-        setTimeout(() => {
-          shapeColorProperty.value = colorRRGGBBAA(hex);
-        }, 30);
+        shapeColorProperty.value = hexToRiveColor(hex);
       }
     }
 
