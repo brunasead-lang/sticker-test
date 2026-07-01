@@ -35,7 +35,7 @@
 
     .rive-box {
       width: 100%;
-      height: 360px;
+      height: 180px;
       background: #1b1b1b;
       border-radius: 20px;
       display: flex;
@@ -47,7 +47,7 @@
 
     canvas {
       width: 640px;
-      height: 240px;
+      height: 65px;
       display: block;
     }
 
@@ -70,17 +70,23 @@
       color: #bdbdbd;
     }
 
-    .colors {
-      display: flex;
-      gap: 10px;
+    input[type="color"] {
+      width: 74px;
+      height: 44px;
+      padding: 0;
+      border: 0;
+      border-radius: 12px;
+      background: none;
+      cursor: pointer;
     }
 
-    .color-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 999px;
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch {
       border: 2px solid rgba(255, 255, 255, 0.25);
-      cursor: pointer;
+      border-radius: 12px;
     }
 
     input[type="range"] {
@@ -104,18 +110,12 @@
       <div class="controls">
         <div class="control-group">
           <label>Shape color</label>
-          <div class="colors">
-            <button class="color-btn" style="background:#FFB429" data-color="#FFB429"></button>
-            <button class="color-btn" style="background:#F1F1F1" data-color="#F1F1F1"></button>
-            <button class="color-btn" style="background:#FF8ACB" data-color="#FF8ACB"></button>
-            <button class="color-btn" style="background:#72E06A" data-color="#72E06A"></button>
-            <button class="color-btn" style="background:#4DA3FF" data-color="#4DA3FF"></button>
-          </div>
+          <input id="colorPicker" type="color" value="#FFB429" />
         </div>
 
         <div class="control-group">
           <label>Artboard width</label>
-          <input id="widthSlider" type="range" min="320" max="820" value="640" />
+          <input id="widthSlider" type="range" min="213" max="820" value="640" />
           <div class="width-value">
             Width: <span id="widthValue">640</span>px
           </div>
@@ -126,13 +126,14 @@
 
   <script>
     const canvas = document.getElementById("canvas");
+    const colorPicker = document.getElementById("colorPicker");
     const widthSlider = document.getElementById("widthSlider");
     const widthValue = document.getElementById("widthValue");
 
     let shapeColorProperty = null;
 
     const riveInstance = new rive.Rive({
-      src: "cta_click.riv",
+      src: "labs_test.riv",
       canvas: canvas,
       autoplay: true,
       stateMachines: "State Machine 1",
@@ -151,11 +152,13 @@
         riveInstance.bindViewModelInstance(viewModelInstance);
 
         shapeColorProperty = viewModelInstance.color("shapeColor");
+        shapeColorProperty.value = hexToRiveColor(colorPicker.value);
       }
     });
 
     function resizeCanvas(width) {
       canvas.style.width = width + "px";
+      canvas.style.height = "65px";
       widthValue.textContent = width;
 
       requestAnimationFrame(() => {
@@ -168,14 +171,10 @@
       return parseInt("FF" + cleanHex, 16);
     }
 
-    document.querySelectorAll(".color-btn").forEach((button) => {
-      button.addEventListener("click", () => {
-        const color = button.dataset.color;
-
-        if (shapeColorProperty) {
-          shapeColorProperty.value = hexToRiveColor(color);
-        }
-      });
+    colorPicker.addEventListener("input", (event) => {
+      if (shapeColorProperty) {
+        shapeColorProperty.value = hexToRiveColor(event.target.value);
+      }
     });
 
     widthSlider.addEventListener("input", (event) => {
